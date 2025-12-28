@@ -12,17 +12,40 @@ const statuses: Record<string, string> = {
     "System Error": "SE",
 };
 
+const langs: Record<string, string> = {
+    cpp: "C++",
+    java: "Java",
+    python: "Python",
+    python3: "Python",
+    mysql: "MySQL",
+    c: "C",
+    csharp: "C#",
+    javascript: "JavaScript",
+    ruby: "Ruby",
+    bash: "Bash",
+    swift: "Swift",
+    golang: "Go",
+    scala: "Scala",
+    kotlin: "Kotlin",
+    rust: "Rust",
+    php: "PHP",
+    typescript: "TypeScript",
+    racket: "Racket",
+    erlang: "Erlang",
+    elixir: "Elixir",
+};
+
 export function ActivityExtension(): Extension {
     return async function Activity(generator, data, body) {
-        if (generator.config.height < 440) {
-            generator.config.height = 440;
+        if (generator.config.height < 300) {
+            generator.config.height = 300;
         }
 
-        const submissions = data.submissions.slice(0, 3);
+        const submissions = data.submissions.slice(0, 4);
 
         const extension = new Item("g", {
             id: "ext-activity",
-            style: { transform: `translate(0px, 300px)` },
+            style: { transform: `translate(0px, 140px)` },
             children: [
                 new Item("line", {
                     attr: { x1: 30, y1: 0, x2: generator.config.width - 30, y2: 0 },
@@ -49,6 +72,8 @@ export function ActivityExtension(): Extension {
         for (let i = 0; i < submissions.length; i++) {
             const status = statuses[submissions[i].status] || "Unknown";
             const color = status === "AC" ? "var(--color-1)" : "var(--color-3)";
+            const time = new Date(submissions[i].time);
+            const lang = (langs[submissions[i].lang] || submissions[i].lang).slice(0, 12);
 
             extension.children?.push(
                 new Item("a", {
@@ -60,37 +85,57 @@ export function ActivityExtension(): Extension {
                         target: "_blank",
                     },
                     style: {
-                        transform: `translate(0px, ${i * 28 + 58}px)`,
+                        transform: `translate(0px, ${i * 26 + 58}px)`,
                         animation:
                             generator.config.animation !== false
                                 ? `fade_in 0.3s ease ${(1.8 + 0.1 * i).toFixed(2)}s 1 backwards`
                                 : "",
                     },
                     children: [
-                        new Item("circle", {
-                            attr: { cx: 40, cy: 0, r: 8 },
+                        new Item("text", {
+                            content: `${time.getFullYear() % 100}.${time.getMonth() + 1}.${time.getDate()}`,
                             style: {
-                                fill: color,
-                                filter: "url(#glow-green)",
+                                transform: "translate(40px, 0)",
+                                fill: "var(--text-0)",
+                                "font-size": "12px",
+                                "alignment-baseline": "middle",
                             },
                         }),
-                        new Item("path", {
-                            attr: { d: "M -3 0 L -1 2 L 4 -4" },
+                        new Item("rect", {
                             style: {
-                                transform: "translate(40px, 0px)",
-                                stroke: "#fff",
-                                "stroke-width": 2,
-                                fill: "none",
-                                "stroke-linecap": "round",
-                                "stroke-linejoin": "round",
+                                transform: "translate(92px, -12px)",
+                                fill: color,
+                                width: "30px",
+                                height: "22px",
+                                rx: 5,
+                            },
+                        }),
+                        new Item("text", {
+                            content: status,
+                            style: {
+                                transform: "translate(107px, 0)",
+                                fill: "#fff",
+                                "font-size": "12px",
+                                "text-anchor": "middle",
+                                "alignment-baseline": "middle",
+                            },
+                        }),
+                        new Item("text", {
+                            content: lang,
+                            style: {
+                                transform: "translate(132px, 0)",
+                                fill: "var(--text-0)",
+                                "font-size": "12px",
+                                "font-weight": 600,
+                                "alignment-baseline": "middle",
                             },
                         }),
                         new Item("text", {
                             content: submissions[i].title,
                             style: {
-                                transform: `translate(64px, 0)`,
-                                fill: "var(--text-0)",
-                                "font-size": "13px",
+                                transform: `translate(260px, 0)`,
+                                fill: "var(--text-1)",
+                                "font-size": "12px",
                                 "alignment-baseline": "middle",
                             },
                         }),

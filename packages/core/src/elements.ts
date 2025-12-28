@@ -1,39 +1,9 @@
 import { Item, svg_attrs } from "./item";
 import { Config, FetchedData } from "./types";
 
-const GAUGE_START_DEG = 210;
-const GAUGE_END_DEG = -30;
-const GAUGE_RADIUS = 64;
-const GAUGE_CENTER_Y = 150;
-const GAUGE_SPAN_DEG = (GAUGE_END_DEG - GAUGE_START_DEG + 360) % 360;
-
-function arcPath(cx: number, cy: number, r: number, startDeg: number, endDeg: number) {
-    const toRad = (deg: number) => (deg * Math.PI) / 180;
-    const start = toRad(startDeg);
-    const end = toRad(endDeg);
-    let delta = end - start;
-    if (delta < 0) {
-        delta += Math.PI * 2;
-    }
-    const largeArc = delta > Math.PI ? 1 : 0;
-    const x1 = cx + r * Math.cos(start);
-    const y1 = cy + r * Math.sin(start);
-    const x2 = cx + r * Math.cos(end);
-    const y2 = cy + r * Math.sin(end);
-
-    return {
-        d: `M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 ${largeArc} 1 ${x2.toFixed(
-            2,
-        )} ${y2.toFixed(2)}`,
-        length: delta * r,
-        end: { x: x2, y: y2 },
-    };
-}
-
-function arcPoint(cx: number, cy: number, r: number, deg: number) {
-    const rad = (deg * Math.PI) / 180;
-    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
-}
+const GAUGE_RADIUS = 34;
+const GAUGE_CENTER_X = 50;
+const GAUGE_CENTER_Y = 72;
 
 export function Root(config: Config, data: FetchedData) {
     return new Item("svg", {
@@ -442,17 +412,17 @@ export function Username(username: string, site: string, width: number) {
             target: "_blank",
         },
         style: {
-            transform: `translate(${Math.round(width / 2)}px, 52px)`,
+            transform: "translate(82px, 28px)",
         },
         children: [
             new Item("text", {
                 id: "username-text",
                 content: username,
                 style: {
-                    fill: "var(--text-0)",
-                    "font-size": "22px",
+                    fill: "#ffffff",
+                    "font-size": "20px",
                     "font-weight": 700,
-                    "text-anchor": "middle",
+                    "text-anchor": "start",
                 },
             }),
         ],
@@ -466,7 +436,7 @@ export function Ranking(ranking: number, width: number) {
         id: "ranking",
         content: "#" + ranking.toString(),
         style: {
-            transform: `translate(${width - 26}px, 32px)`,
+            transform: `translate(${width - 20}px, 28px)`,
             fill: "var(--text-1)",
             "font-size": "12px",
             "font-weight": 600,
@@ -479,74 +449,46 @@ export function Ranking(ranking: number, width: number) {
 }
 
 export function TotalSolved(total: number, solved: number, width: number) {
-    const centerX = Math.round(width / 2);
+    const centerX = GAUGE_CENTER_X;
     const centerY = GAUGE_CENTER_Y;
-    const { d, length, end } = arcPath(
-        centerX,
-        centerY,
-        GAUGE_RADIUS,
-        GAUGE_START_DEG,
-        GAUGE_END_DEG,
-    );
     const ratio = total > 0 ? solved / total : 0;
     const progress = Math.max(0, Math.min(1, ratio));
-    const endPoint = arcPoint(
-        centerX,
-        centerY,
-        GAUGE_RADIUS,
-        GAUGE_START_DEG + GAUGE_SPAN_DEG * progress,
-    );
+    const circumference = 2 * Math.PI * GAUGE_RADIUS;
     return new Item("g", {
         id: "total-solved",
         children: [
-            new Item("path", {
+            new Item("circle", {
                 id: "total-solved-bg",
-                attr: {
-                    d,
-                },
+                attr: { cx: centerX, cy: centerY, r: GAUGE_RADIUS },
                 style: {
-                    fill: "none",
                     stroke: "var(--bg-1)",
-                    "stroke-width": "10px",
-                    "stroke-linecap": "round",
-                    opacity: 0.6,
-                },
-            }),
-            new Item("path", {
-                id: "total-solved-ring",
-                attr: {
-                    d,
-                },
-                style: {
+                    "stroke-width": "6px",
                     fill: "none",
-                    "stroke-dasharray": `${(length * progress).toFixed(2)} 10000`,
-                    stroke: "url(#gauge-gradient)",
-                    "stroke-width": "10px",
-                    "stroke-linecap": "round",
-                    filter: "url(#glow-blue)",
+                    opacity: 0.7,
                 },
             }),
             new Item("circle", {
-                id: "total-solved-end",
-                attr: {
-                    cx: endPoint.x.toFixed(2),
-                    cy: endPoint.y.toFixed(2),
-                    r: 3.5,
-                },
+                id: "total-solved-ring",
+                attr: { cx: centerX, cy: centerY, r: GAUGE_RADIUS },
                 style: {
-                    fill: "#e6f7ff",
-                    filter: "url(#glow-blue)",
+                    fill: "none",
+                    "stroke-dasharray": `${(circumference * progress).toFixed(2)} 10000`,
+                    stroke: "var(--color-0)",
+                    "stroke-width": "6px",
+                    "stroke-linecap": "round",
+                    transform: "rotate(-90deg)",
+                    "transform-origin": `${centerX}px ${centerY}px`,
                 },
             }),
             new Item("text", {
                 content: solved.toString(),
                 id: "total-solved-text",
                 style: {
-                    transform: `translate(${centerX}px, ${centerY + 6}px)`,
-                    "font-size": "36px",
+                    transform: `translate(${centerX}px, ${centerY + 4}px)`,
+                    "font-size": "28px",
                     "alignment-baseline": "middle",
                     "text-anchor": "middle",
-                    fill: "var(--text-0)",
+                    fill: "#ffffff",
                     "font-weight": 700,
                 },
             }),
@@ -555,11 +497,11 @@ export function TotalSolved(total: number, solved: number, width: number) {
 }
 
 export function Solved(problem: FetchedData["problem"], width: number) {
-    const barX = 40;
-    const barWidth = Math.max(200, width - barX * 2);
-    const barHeight = 20;
-    const rowGap = 10;
-    const startY = 220;
+    const barX = 130;
+    const barWidth = Math.max(220, width - 170);
+    const barHeight = 18;
+    const rowGap = 24;
+    const startY = 50;
 
     const group = new Item("g", {
         id: "solved",
@@ -570,15 +512,14 @@ export function Solved(problem: FetchedData["problem"], width: number) {
         "url(#bar-easy-gradient)",
         "url(#bar-medium-gradient)",
         "url(#bar-hard-gradient)",
-    ];
-    const glows = ["url(#glow-green)", "url(#glow-amber)", "url(#glow-red)"];
+    ] as const;
+    const glows = ["url(#glow-green)", "url(#glow-amber)", "url(#glow-red)"] as const;
     for (let i = 0; i < difficulties.length; i++) {
         const ratio =
             problem[difficulties[i]].total > 0
                 ? problem[difficulties[i]].solved / problem[difficulties[i]].total
                 : 0;
-        const percent = Math.round(ratio * 100);
-        const y = startY + i * (barHeight + rowGap);
+        const y = startY + i * rowGap;
 
         group.children?.push(
             new Item("g", {
@@ -594,8 +535,9 @@ export function Solved(problem: FetchedData["problem"], width: number) {
                             rx: barHeight / 2,
                         },
                         style: {
-                            fill: "url(#bar-track-gradient)",
-                            opacity: 0.85,
+                            fill: "rgba(255,255,255,0.18)",
+                            stroke: "rgba(255,255,255,0.25)",
+                            "stroke-width": 1,
                         },
                     }),
                     new Item("rect", {
@@ -603,7 +545,7 @@ export function Solved(problem: FetchedData["problem"], width: number) {
                         attr: {
                             x: barX,
                             y,
-                            width: Math.min(barWidth, Math.round(barWidth * ratio)),
+                            width: Math.max(barHeight, Math.round(barWidth * ratio)),
                             height: barHeight,
                             rx: barHeight / 2,
                         },
@@ -616,7 +558,7 @@ export function Solved(problem: FetchedData["problem"], width: number) {
                         id: `${difficulties[i]}-solved-type`,
                         style: {
                             transform: `translate(${barX + 12}px, ${y + barHeight / 2}px)`,
-                            fill: "var(--bar-text)",
+                            fill: "#ffffff",
                             "font-size": "13px",
                             "font-weight": 600,
                             "alignment-baseline": "middle",
@@ -626,14 +568,16 @@ export function Solved(problem: FetchedData["problem"], width: number) {
                     new Item("text", {
                         id: `${difficulties[i]}-solved-count`,
                         style: {
-                            transform: `translate(${barX + barWidth}px, ${y + barHeight / 2}px)`,
+                            transform: `translate(${barX + barWidth - 6}px, ${y + barHeight / 2}px)`,
                             fill: "var(--text-1)",
                             "font-size": "12px",
                             "font-weight": 600,
                             "text-anchor": "end",
                             "alignment-baseline": "middle",
                         },
-                        content: `${percent}%`,
+                        content: `${problem[difficulties[i]].solved} / ${
+                            problem[difficulties[i]].total
+                        }`,
                     }),
                 ],
             }),

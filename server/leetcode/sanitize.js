@@ -59,8 +59,8 @@ export function sanitize(config) {
   const sanitized = {
     username: config.username.trim(),
     site: config.site?.trim().toLowerCase() === "cn" ? "cn" : "us",
-    width: parseInt(config.width?.trim(), 10) || 360,
-    height: parseInt(config.height?.trim(), 10) || 360,
+    width: parseInt(config.width?.trim(), 10) || 520,
+    height: parseInt(config.height?.trim(), 10) || 260,
     css: [],
     extensions: handleExtension(config),
     font: normalize(config.font?.trim() || "baloo_2"),

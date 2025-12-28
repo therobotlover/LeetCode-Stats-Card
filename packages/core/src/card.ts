@@ -8,8 +8,8 @@ export class Generator {
     public config: Config = {
         username: "ShaonMajumder",
         site: "us",
-        width: 360,
-        height: 360,
+        width: 520,
+        height: 260,
         css: [],
         extensions: [],
     };
