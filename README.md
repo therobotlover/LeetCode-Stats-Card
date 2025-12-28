@@ -226,7 +226,7 @@ Senior Software Engineer - AI & Scalability
 - GitHub: https://github.com/ShaonMajumder
 - LinkedIn: https://www.linkedin.com/in/shaonmajumder
 - Medium: https://medium.com/@shaonmajumder
-- Resume: https://docs.google.com/document/d/1frKGGkaE1nG9G8mTkxUoPfcU0jppSZYOy4VMPTlIb-Y/edit?tab=t.0
+- Resume: https://shaonresume.netlify.app/resume.html
 
 ---
 
