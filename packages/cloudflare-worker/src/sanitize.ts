@@ -65,13 +65,13 @@ export function sanitize(config: Record<string, string>): Config {
     const sanitized: Config = {
         username: config.username.trim(),
         site: config.site?.trim().toLowerCase() === "cn" ? "cn" : "us",
-        width: parseInt(config.width?.trim()) || 500,
-        height: parseInt(config.height?.trim()) || 200,
+        width: parseInt(config.width?.trim()) || 360,
+        height: parseInt(config.height?.trim()) || 360,
         css: [],
         extensions: handleExtension(config),
         font: normalize(config.font?.trim() || "baloo_2"),
         animation: config.animation ? booleanize(config.animation.trim()) : true,
-        theme: { light: "light", dark: "dark" },
+        theme: "glass",
         cache: 60,
     };
 

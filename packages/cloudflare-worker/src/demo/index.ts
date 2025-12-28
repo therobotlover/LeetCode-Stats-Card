@@ -11,7 +11,7 @@ export default html
             .map(
                 (theme) =>
                     `<option value="${theme}" ${
-                        theme === "light" ? "selected" : ""
+                        theme === "glass" ? "selected" : ""
                     }>${theme}</option>`,
             )
             .join(""),

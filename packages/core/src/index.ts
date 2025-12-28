@@ -18,13 +18,13 @@ export async function generate(config: Partial<Config>): Promise<string> {
     return await generator.generate({
         username: "ShaonMajumder",
         site: "us",
-        width: 500,
-        height: 200,
+        width: 360,
+        height: 360,
         css: [],
         extensions: [FontExtension, AnimationExtension, ThemeExtension],
         animation: true,
         font: "baloo_2",
-        theme: "light",
+        theme: "glass",
         ...config,
     });
 }

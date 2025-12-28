@@ -2,6 +2,11 @@ import { selectors } from "../elements";
 import { Extension } from "../types";
 
 const keyframe = `@keyframes fade_in{from{opacity:0}to{opacity:1}}`;
+const GAUGE_RADIUS = 64;
+const GAUGE_START_DEG = 210;
+const GAUGE_END_DEG = -30;
+const ARC_SPAN_DEG = (GAUGE_END_DEG - GAUGE_START_DEG + 360) % 360;
+const ARC_LENGTH = (ARC_SPAN_DEG * Math.PI * GAUGE_RADIUS) / 180;
 
 const order: (typeof selectors)[number][] = [
     "#icon",
@@ -47,7 +52,8 @@ export function AnimationExtension(): Extension {
             [0, 0],
         );
 
-        css += circle("#total-solved-ring", 80 * Math.PI * (solved / total), 0.7);
+        const ratio = total > 0 ? solved / total : 0;
+        css += circle("#total-solved-ring", ARC_LENGTH * ratio, 0.7);
 
         styles.push(css);
     };

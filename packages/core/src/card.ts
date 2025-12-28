@@ -1,4 +1,4 @@
-import { Icon, Ranking, Root, Solved, TotalSolved, Username } from "./elements";
+import { Ranking, Root, Solved, TotalSolved, Username } from "./elements";
 import { Item } from "./item";
 import query from "./query";
 import { Config, Extension, FetchedData } from "./types";
@@ -8,8 +8,8 @@ export class Generator {
     public config: Config = {
         username: "ShaonMajumder",
         site: "us",
-        width: 500,
-        height: 200,
+        width: 360,
+        height: 360,
         css: [],
         extensions: [],
     };
@@ -149,13 +149,12 @@ export class Generator {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     protected body(): Record<string, (...args: any[]) => Item> {
-        const icon = Icon;
         const username = Username;
         const ranking = Ranking;
         const total_solved = TotalSolved;
         const solved = Solved;
 
-        return { icon, username, ranking, total_solved, solved };
+        return { username, ranking, total_solved, solved };
     }
 
     protected async hydrate(
@@ -180,11 +179,9 @@ export class Generator {
         if (!root.children) {
             root.children = [];
         }
-        root.children.push(body.icon());
-        delete body.icon;
-        root.children.push(body.username(data.profile.username, this.config.site));
+        root.children.push(body.username(data.profile.username, this.config.site, this.config.width));
         delete body.username;
-        root.children.push(body.ranking(data.problem.ranking));
+        root.children.push(body.ranking(data.problem.ranking, this.config.width));
         delete body.ranking;
         const [total, solved] = (["easy", "medium", "hard"] as const).reduce(
             (acc, level) => [
@@ -193,9 +190,9 @@ export class Generator {
             ],
             [0, 0],
         );
-        root.children.push(body.total_solved(total, solved));
+        root.children.push(body.total_solved(total, solved, this.config.width));
         delete body.total_solved;
-        root.children.push(body.solved(data.problem));
+        root.children.push(body.solved(data.problem, this.config.width));
         delete body.solved;
 
         Object.values(body).forEach((item) => {

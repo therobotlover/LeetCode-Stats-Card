@@ -3,6 +3,7 @@ import catppuccinMocha from "../theme/catppuccin-mocha.js";
 import chartreuse from "../theme/chartreuse.js";
 import dark from "../theme/dark.js";
 import forest from "../theme/forest.js";
+import glass from "../theme/glass.js";
 import light from "../theme/light.js";
 import nord from "../theme/nord.js";
 import radical from "../theme/radical.js";
@@ -20,6 +21,7 @@ function themeFromColors(list) {
 export const supported = {
   dark,
   forest,
+  glass,
   light,
   nord,
   unicorn,
@@ -85,22 +87,23 @@ function css(theme) {
       css += `--color-${i}:${theme.palette.color[i]};`;
     }
   }
+  css += "--bar-text:#fff;";
   css += "}";
 
   if (theme.palette.bg) {
-    css += "#background{fill:var(--bg-0)}";
+    css += "#background{fill:var(--bg-0);stroke:var(--bg-2)}";
+    css += "#glass-border{stroke:var(--bg-3)}";
     css += "#total-solved-bg{stroke:var(--bg-1)}";
-    css += "#easy-solved-bg{stroke:var(--bg-1)}";
-    css += "#medium-solved-bg{stroke:var(--bg-1)}";
-    css += "#hard-solved-bg{stroke:var(--bg-1)}";
+    css += "#easy-solved-bg{fill:var(--bg-1)}";
+    css += "#medium-solved-bg{fill:var(--bg-1)}";
+    css += "#hard-solved-bg{fill:var(--bg-1)}";
   }
   if (theme.palette.text) {
-    css += "#username{fill:var(--text-0)}";
     css += "#username-text{fill:var(--text-0)}";
     css += "#total-solved-text{fill:var(--text-0)}";
-    css += "#easy-solved-type{fill:var(--text-0)}";
-    css += "#medium-solved-type{fill:var(--text-0)}";
-    css += "#hard-solved-type{fill:var(--text-0)}";
+    css += "#easy-solved-type{fill:var(--bar-text)}";
+    css += "#medium-solved-type{fill:var(--bar-text)}";
+    css += "#hard-solved-type{fill:var(--bar-text)}";
     css += "#ranking{fill:var(--text-1)}";
     css += "#easy-solved-count{fill:var(--text-1)}";
     css += "#medium-solved-count{fill:var(--text-1)}";
@@ -111,13 +114,13 @@ function css(theme) {
       css += "#total-solved-ring{stroke:var(--color-0)}";
     }
     if (theme.palette.color.length > 1) {
-      css += "#easy-solved-progress{stroke:var(--color-1)}";
+      css += "#easy-solved-progress{fill:var(--color-1)}";
     }
     if (theme.palette.color.length > 2) {
-      css += "#medium-solved-progress{stroke:var(--color-2)}";
+      css += "#medium-solved-progress{fill:var(--color-2)}";
     }
     if (theme.palette.color.length > 3) {
-      css += "#hard-solved-progress{stroke:var(--color-3)}";
+      css += "#hard-solved-progress{fill:var(--color-3)}";
     }
   }
 

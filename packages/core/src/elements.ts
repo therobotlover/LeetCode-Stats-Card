@@ -1,6 +1,40 @@
 import { Item, svg_attrs } from "./item";
 import { Config, FetchedData } from "./types";
 
+const GAUGE_START_DEG = 210;
+const GAUGE_END_DEG = -30;
+const GAUGE_RADIUS = 64;
+const GAUGE_CENTER_Y = 150;
+const GAUGE_SPAN_DEG = (GAUGE_END_DEG - GAUGE_START_DEG + 360) % 360;
+
+function arcPath(cx: number, cy: number, r: number, startDeg: number, endDeg: number) {
+    const toRad = (deg: number) => (deg * Math.PI) / 180;
+    const start = toRad(startDeg);
+    const end = toRad(endDeg);
+    let delta = end - start;
+    if (delta < 0) {
+        delta += Math.PI * 2;
+    }
+    const largeArc = delta > Math.PI ? 1 : 0;
+    const x1 = cx + r * Math.cos(start);
+    const y1 = cy + r * Math.sin(start);
+    const x2 = cx + r * Math.cos(end);
+    const y2 = cy + r * Math.sin(end);
+
+    return {
+        d: `M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 ${largeArc} 1 ${x2.toFixed(
+            2,
+        )} ${y2.toFixed(2)}`,
+        length: delta * r,
+        end: { x: x2, y: y2 },
+    };
+}
+
+function arcPoint(cx: number, cy: number, r: number, deg: number) {
+    const rad = (deg * Math.PI) / 180;
+    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+
 export function Root(config: Config, data: FetchedData) {
     return new Item("svg", {
         id: "root",
@@ -17,18 +51,329 @@ export function Root(config: Config, data: FetchedData) {
             }),
             new Item("style", {
                 id: "default-colors",
-                content: `svg{opacity:0}:root{--bg-0:#fff;--bg-1:#e5e5e5;--bg-2:#d3d3d3;--bg-3:#d3d3d3;--text-0:#000;--text-1:#808080;--text-2:#808080;--text-3:#808080;--color-0:#ffa116;--color-1:#5cb85c;--color-2:#f0ad4e;--color-3:#d9534f}`,
+                content: `svg{opacity:0}:root{--bg-0:#fff;--bg-1:#e5e5e5;--bg-2:#d3d3d3;--bg-3:#d3d3d3;--text-0:#000;--text-1:#808080;--text-2:#808080;--text-3:#808080;--color-0:#ffa116;--color-1:#5cb85c;--color-2:#f0ad4e;--color-3:#d9534f;--bar-text:#fff}`,
+            }),
+            new Item("defs", {
+                children: [
+                    new Item("linearGradient", {
+                        id: "glass-sheen-gradient",
+                        attr: { x1: "0", y1: "0", x2: "1", y2: "1" },
+                        children: [
+                            new Item("stop", {
+                                attr: { offset: "0%", "stop-color": "rgba(255,255,255,0.45)" },
+                            }),
+                            new Item("stop", {
+                                attr: {
+                                    offset: "55%",
+                                    "stop-color": "rgba(255,255,255,0.12)",
+                                },
+                            }),
+                            new Item("stop", {
+                                attr: {
+                                    offset: "100%",
+                                    "stop-color": "rgba(255,255,255,0)",
+                                },
+                            }),
+                        ],
+                    }),
+                    new Item("linearGradient", {
+                        id: "glass-top-gradient",
+                        attr: { x1: "0", y1: "0", x2: "0", y2: "1" },
+                        children: [
+                            new Item("stop", {
+                                attr: { offset: "0%", "stop-color": "rgba(255,255,255,0.45)" },
+                            }),
+                            new Item("stop", {
+                                attr: { offset: "100%", "stop-color": "rgba(255,255,255,0)" },
+                            }),
+                        ],
+                    }),
+                    new Item("linearGradient", {
+                        id: "card-gradient",
+                        attr: { x1: "0", y1: "0", x2: "1", y2: "1" },
+                        children: [
+                            new Item("stop", {
+                                attr: { offset: "0%", "stop-color": "var(--bg-0)" },
+                            }),
+                            new Item("stop", {
+                                attr: { offset: "60%", "stop-color": "var(--bg-1)" },
+                            }),
+                            new Item("stop", {
+                                attr: { offset: "100%", "stop-color": "var(--bg-0)" },
+                            }),
+                        ],
+                    }),
+                    new Item("radialGradient", {
+                        id: "card-vignette",
+                        attr: { cx: "70%", cy: "80%", r: "80%" },
+                        children: [
+                            new Item("stop", {
+                                attr: { offset: "0%", "stop-color": "rgba(0,0,0,0)" },
+                            }),
+                            new Item("stop", {
+                                attr: { offset: "100%", "stop-color": "rgba(0,0,0,0.35)" },
+                            }),
+                        ],
+                    }),
+                    new Item("radialGradient", {
+                        id: "glass-ambient-gradient",
+                        attr: { cx: "82%", cy: "88%", r: "75%" },
+                        children: [
+                            new Item("stop", {
+                                attr: { offset: "0%", "stop-color": "rgba(120,70,160,0.35)" },
+                            }),
+                            new Item("stop", {
+                                attr: { offset: "100%", "stop-color": "rgba(120,70,160,0)" },
+                            }),
+                        ],
+                    }),
+                    new Item("filter", {
+                        id: "glass-shadow",
+                        attr: {
+                            x: "-20%",
+                            y: "-20%",
+                            width: "140%",
+                            height: "140%",
+                        },
+                        children: [
+                            new Item("feDropShadow", {
+                                attr: {
+                                    dx: "0",
+                                    dy: "8",
+                                    stdDeviation: "10",
+                                    "flood-color": "rgba(10,20,30,0.35)",
+                                },
+                            }),
+                            new Item("feDropShadow", {
+                                attr: {
+                                    dx: "0",
+                                    dy: "0",
+                                    stdDeviation: "18",
+                                    "flood-color": "rgba(80,140,255,0.35)",
+                                },
+                            }),
+                            new Item("feDropShadow", {
+                                attr: {
+                                    dx: "0",
+                                    dy: "0",
+                                    stdDeviation: "22",
+                                    "flood-color": "rgba(180,120,255,0.25)",
+                                },
+                            }),
+                        ],
+                    }),
+                    new Item("filter", {
+                        id: "glow-blue",
+                        attr: { x: "-50%", y: "-50%", width: "200%", height: "200%" },
+                        children: [
+                            new Item("feDropShadow", {
+                                attr: {
+                                    dx: "0",
+                                    dy: "0",
+                                    stdDeviation: "6",
+                                    "flood-color": "rgba(90,170,255,0.8)",
+                                },
+                            }),
+                        ],
+                    }),
+                    new Item("filter", {
+                        id: "glow-green",
+                        attr: { x: "-50%", y: "-50%", width: "200%", height: "200%" },
+                        children: [
+                            new Item("feDropShadow", {
+                                attr: {
+                                    dx: "0",
+                                    dy: "0",
+                                    stdDeviation: "5",
+                                    "flood-color": "rgba(120,230,150,0.75)",
+                                },
+                            }),
+                        ],
+                    }),
+                    new Item("filter", {
+                        id: "glow-amber",
+                        attr: { x: "-50%", y: "-50%", width: "200%", height: "200%" },
+                        children: [
+                            new Item("feDropShadow", {
+                                attr: {
+                                    dx: "0",
+                                    dy: "0",
+                                    stdDeviation: "5",
+                                    "flood-color": "rgba(255,180,90,0.75)",
+                                },
+                            }),
+                        ],
+                    }),
+                    new Item("filter", {
+                        id: "glow-red",
+                        attr: { x: "-50%", y: "-50%", width: "200%", height: "200%" },
+                        children: [
+                            new Item("feDropShadow", {
+                                attr: {
+                                    dx: "0",
+                                    dy: "0",
+                                    stdDeviation: "5",
+                                    "flood-color": "rgba(255,110,110,0.75)",
+                                },
+                            }),
+                        ],
+                    }),
+                    new Item("linearGradient", {
+                        id: "gauge-gradient",
+                        attr: { x1: "0", y1: "0", x2: "1", y2: "0" },
+                        children: [
+                            new Item("stop", {
+                                attr: { offset: "0%", "stop-color": "#5cb0ff" },
+                            }),
+                            new Item("stop", {
+                                attr: { offset: "100%", "stop-color": "#8cd4ff" },
+                            }),
+                        ],
+                    }),
+                    new Item("linearGradient", {
+                        id: "bar-easy-gradient",
+                        attr: { x1: "0", y1: "0", x2: "1", y2: "0" },
+                        children: [
+                            new Item("stop", {
+                                attr: { offset: "0%", "stop-color": "#49c26b" },
+                            }),
+                            new Item("stop", {
+                                attr: { offset: "100%", "stop-color": "#8de88f" },
+                            }),
+                        ],
+                    }),
+                    new Item("linearGradient", {
+                        id: "bar-medium-gradient",
+                        attr: { x1: "0", y1: "0", x2: "1", y2: "0" },
+                        children: [
+                            new Item("stop", {
+                                attr: { offset: "0%", "stop-color": "#f59e3b" },
+                            }),
+                            new Item("stop", {
+                                attr: { offset: "100%", "stop-color": "#ffd16b" },
+                            }),
+                        ],
+                    }),
+                    new Item("linearGradient", {
+                        id: "bar-hard-gradient",
+                        attr: { x1: "0", y1: "0", x2: "1", y2: "0" },
+                        children: [
+                            new Item("stop", {
+                                attr: { offset: "0%", "stop-color": "#f05b5b" },
+                            }),
+                            new Item("stop", {
+                                attr: { offset: "100%", "stop-color": "#ff8a8a" },
+                            }),
+                        ],
+                    }),
+                    new Item("linearGradient", {
+                        id: "bar-track-gradient",
+                        attr: { x1: "0", y1: "0", x2: "1", y2: "0" },
+                        children: [
+                            new Item("stop", {
+                                attr: { offset: "0%", "stop-color": "rgba(255,255,255,0.35)" },
+                            }),
+                            new Item("stop", {
+                                attr: { offset: "100%", "stop-color": "rgba(255,255,255,0.15)" },
+                            }),
+                        ],
+                    }),
+                ],
             }),
             new Item("rect", {
                 id: "background",
+                attr: {
+                    width: config.width - 2,
+                    height: config.height - 2,
+                    rx: "22px",
+                    filter: "url(#glass-shadow)",
+                },
                 style: {
-                    transform: "translate(0.5px, 0.5px)",
+                    transform: "translate(1px, 1px)",
                     stroke: "var(--bg-2)",
                     fill: "var(--bg-0)",
                     "stroke-width": 1,
-                    width: config.width - 1 + "px",
-                    height: config.height - 1 + "px",
-                    rx: "4px",
+                },
+            }),
+            new Item("rect", {
+                id: "glass-ambient",
+                attr: {
+                    width: config.width - 4,
+                    height: config.height - 4,
+                    rx: "20px",
+                },
+                style: {
+                    transform: "translate(2px, 2px)",
+                    fill: "url(#glass-ambient-gradient)",
+                    opacity: 0.7,
+                },
+            }),
+            new Item("rect", {
+                id: "glass-vignette",
+                attr: {
+                    width: config.width - 4,
+                    height: config.height - 4,
+                    rx: "20px",
+                },
+                style: {
+                    transform: "translate(2px, 2px)",
+                    fill: "url(#card-vignette)",
+                    opacity: 0.5,
+                },
+            }),
+            new Item("rect", {
+                id: "glass-top",
+                attr: {
+                    width: config.width - 4,
+                    height: Math.round(config.height * 0.42),
+                    rx: "20px",
+                },
+                style: {
+                    transform: "translate(2px, 2px)",
+                    fill: "url(#glass-top-gradient)",
+                    opacity: 0.4,
+                },
+            }),
+            new Item("rect", {
+                id: "glass-inner-border",
+                attr: {
+                    width: config.width - 8,
+                    height: config.height - 8,
+                    rx: "18px",
+                },
+                style: {
+                    transform: "translate(4px, 4px)",
+                    stroke: "rgba(255,255,255,0.28)",
+                    "stroke-width": 1,
+                    fill: "none",
+                },
+            }),
+            new Item("rect", {
+                id: "glass-sheen",
+                attr: {
+                    width: config.width - 4,
+                    height: config.height - 4,
+                    rx: "20px",
+                },
+                style: {
+                    transform: "translate(2px, 2px)",
+                    fill: "url(#glass-sheen-gradient)",
+                    opacity: 0.45,
+                },
+            }),
+            new Item("rect", {
+                id: "glass-border",
+                attr: {
+                    width: config.width - 2,
+                    height: config.height - 2,
+                    rx: "22px",
+                },
+                style: {
+                    transform: "translate(1px, 1px)",
+                    stroke: "var(--bg-3)",
+                    "stroke-width": 1,
+                    fill: "none",
+                    opacity: 0.8,
                 },
             }),
         ],
@@ -86,7 +431,7 @@ export function Icon() {
     return item;
 }
 
-export function Username(username: string, site: string) {
+export function Username(username: string, site: string, width: number) {
     const item = new Item("a", {
         id: "username",
         attr: {
@@ -97,7 +442,7 @@ export function Username(username: string, site: string) {
             target: "_blank",
         },
         style: {
-            transform: "translate(65px, 40px)",
+            transform: `translate(${Math.round(width / 2)}px, 52px)`,
         },
         children: [
             new Item("text", {
@@ -105,8 +450,9 @@ export function Username(username: string, site: string) {
                 content: username,
                 style: {
                     fill: "var(--text-0)",
-                    "font-size": "24px",
-                    "font-weight": "bold",
+                    "font-size": "22px",
+                    "font-weight": 700,
+                    "text-anchor": "middle",
                 },
             }),
         ],
@@ -115,131 +461,179 @@ export function Username(username: string, site: string) {
     return item;
 }
 
-export function Ranking(ranking: number) {
+export function Ranking(ranking: number, width: number) {
     const item = new Item("text", {
         id: "ranking",
         content: "#" + ranking.toString(),
         style: {
-            transform: "translate(480px, 40px)",
+            transform: `translate(${width - 26}px, 32px)`,
             fill: "var(--text-1)",
-            "font-size": "18px",
-            "font-weight": "bold",
+            "font-size": "12px",
+            "font-weight": 600,
             "text-anchor": "end",
+            opacity: 0.7,
         },
     });
 
     return item;
 }
 
-export function TotalSolved(total: number, solved: number) {
+export function TotalSolved(total: number, solved: number, width: number) {
+    const centerX = Math.round(width / 2);
+    const centerY = GAUGE_CENTER_Y;
+    const { d, length, end } = arcPath(
+        centerX,
+        centerY,
+        GAUGE_RADIUS,
+        GAUGE_START_DEG,
+        GAUGE_END_DEG,
+    );
+    const ratio = total > 0 ? solved / total : 0;
+    const progress = Math.max(0, Math.min(1, ratio));
+    const endPoint = arcPoint(
+        centerX,
+        centerY,
+        GAUGE_RADIUS,
+        GAUGE_START_DEG + GAUGE_SPAN_DEG * progress,
+    );
     return new Item("g", {
         id: "total-solved",
-        style: {
-            transform: "translate(30px, 85px)",
-        },
         children: [
-            new Item("circle", {
+            new Item("path", {
                 id: "total-solved-bg",
+                attr: {
+                    d,
+                },
                 style: {
-                    cx: "40px",
-                    cy: "40px",
-                    r: "40px",
+                    fill: "none",
                     stroke: "var(--bg-1)",
-                    "stroke-width": "6px",
+                    "stroke-width": "10px",
+                    "stroke-linecap": "round",
+                    opacity: 0.6,
+                },
+            }),
+            new Item("path", {
+                id: "total-solved-ring",
+                attr: {
+                    d,
+                },
+                style: {
+                    fill: "none",
+                    "stroke-dasharray": `${(length * progress).toFixed(2)} 10000`,
+                    stroke: "url(#gauge-gradient)",
+                    "stroke-width": "10px",
+                    "stroke-linecap": "round",
+                    filter: "url(#glow-blue)",
                 },
             }),
             new Item("circle", {
-                id: "total-solved-ring",
+                id: "total-solved-end",
+                attr: {
+                    cx: endPoint.x.toFixed(2),
+                    cy: endPoint.y.toFixed(2),
+                    r: 3.5,
+                },
                 style: {
-                    cx: "40px",
-                    cy: "40px",
-                    r: "40px",
-                    transform: "rotate(-90deg)",
-                    "transform-origin": "40px 40px",
-                    "stroke-dasharray": `${(80 * Math.PI * solved) / total} 10000`,
-                    stroke: "var(--color-0)",
-                    "stroke-width": "6px",
-                    "stroke-linecap": "round",
+                    fill: "#e6f7ff",
+                    filter: "url(#glow-blue)",
                 },
             }),
             new Item("text", {
                 content: solved.toString(),
                 id: "total-solved-text",
                 style: {
-                    transform: "translate(40px, 40px)",
-                    "font-size": "28px",
-                    "alignment-baseline": "central",
-                    "dominant-baseline": "central",
+                    transform: `translate(${centerX}px, ${centerY + 6}px)`,
+                    "font-size": "36px",
+                    "alignment-baseline": "middle",
                     "text-anchor": "middle",
                     fill: "var(--text-0)",
-                    "font-weight": "bold",
+                    "font-weight": 700,
                 },
             }),
         ],
     });
 }
 
-export function Solved(problem: FetchedData["problem"]) {
+export function Solved(problem: FetchedData["problem"], width: number) {
+    const barX = 40;
+    const barWidth = Math.max(200, width - barX * 2);
+    const barHeight = 20;
+    const rowGap = 10;
+    const startY = 220;
+
     const group = new Item("g", {
         id: "solved",
-        style: {
-            transform: "translate(160px, 80px)",
-        },
     });
 
     const difficulties = ["easy", "medium", "hard"] as const;
-    const colors = ["var(--color-1)", "var(--color-2)", "var(--color-3)"] as const;
+    const colors = [
+        "url(#bar-easy-gradient)",
+        "url(#bar-medium-gradient)",
+        "url(#bar-hard-gradient)",
+    ];
+    const glows = ["url(#glow-green)", "url(#glow-amber)", "url(#glow-red)"];
     for (let i = 0; i < difficulties.length; i++) {
+        const ratio =
+            problem[difficulties[i]].total > 0
+                ? problem[difficulties[i]].solved / problem[difficulties[i]].total
+                : 0;
+        const percent = Math.round(ratio * 100);
+        const y = startY + i * (barHeight + rowGap);
+
         group.children?.push(
             new Item("g", {
                 id: `${difficulties[i]}-solved`,
-                style: {
-                    transform: `translate(0, ${i * 40}px)`,
-                },
                 children: [
+                    new Item("rect", {
+                        id: `${difficulties[i]}-solved-bg`,
+                        attr: {
+                            x: barX,
+                            y,
+                            width: barWidth,
+                            height: barHeight,
+                            rx: barHeight / 2,
+                        },
+                        style: {
+                            fill: "url(#bar-track-gradient)",
+                            opacity: 0.85,
+                        },
+                    }),
+                    new Item("rect", {
+                        id: `${difficulties[i]}-solved-progress`,
+                        attr: {
+                            x: barX,
+                            y,
+                            width: Math.min(barWidth, Math.round(barWidth * ratio)),
+                            height: barHeight,
+                            rx: barHeight / 2,
+                        },
+                        style: {
+                            fill: colors[i],
+                            filter: glows[i],
+                        },
+                    }),
                     new Item("text", {
                         id: `${difficulties[i]}-solved-type`,
                         style: {
-                            fill: "var(--text-0)",
-                            "font-size": "18px",
-                            "font-weight": "bold",
+                            transform: `translate(${barX + 12}px, ${y + barHeight / 2}px)`,
+                            fill: "var(--bar-text)",
+                            "font-size": "13px",
+                            "font-weight": 600,
+                            "alignment-baseline": "middle",
                         },
                         content: difficulties[i][0].toUpperCase() + difficulties[i].slice(1),
                     }),
                     new Item("text", {
                         id: `${difficulties[i]}-solved-count`,
                         style: {
-                            transform: "translate(300px, 0px)",
+                            transform: `translate(${barX + barWidth}px, ${y + barHeight / 2}px)`,
                             fill: "var(--text-1)",
-                            "font-size": "16px",
-                            "font-weight": "bold",
+                            "font-size": "12px",
+                            "font-weight": 600,
                             "text-anchor": "end",
+                            "alignment-baseline": "middle",
                         },
-                        content: `${problem[difficulties[i]].solved} / ${
-                            problem[difficulties[i]].total
-                        }`,
-                    }),
-                    new Item("line", {
-                        id: `${difficulties[i]}-solved-bg`,
-                        attr: { x1: 0, y1: 10, x2: 300, y2: 10 },
-                        style: {
-                            stroke: "var(--bg-1)",
-                            "stroke-width": "4px",
-                            "stroke-linecap": "round",
-                        },
-                    }),
-                    new Item("line", {
-                        id: `${difficulties[i]}-solved-progress`,
-                        attr: { x1: 0, y1: 10, x2: 300, y2: 10 },
-                        style: {
-                            stroke: colors[i],
-                            "stroke-width": "4px",
-                            "stroke-dasharray": `${
-                                300 *
-                                (problem[difficulties[i]].solved / problem[difficulties[i]].total)
-                            } 10000`,
-                            "stroke-linecap": "round",
-                        },
+                        content: `${percent}%`,
                     }),
                 ],
             }),
@@ -259,6 +653,8 @@ export const selectors = [
     "#username",
     "#username-text",
     "#ranking",
+    "#glass-sheen",
+    "#glass-border",
     "#total-solved",
     "#total-solved-bg",
     "#total-solved-ring",

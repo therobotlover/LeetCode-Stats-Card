@@ -3,6 +3,7 @@ import catppuccinMocha from "../theme/catppuccin-mocha";
 import chartreuse from "../theme/chartreuse";
 import dark from "../theme/dark";
 import forest from "../theme/forest";
+import glass from "../theme/glass";
 import light from "../theme/light";
 import nord from "../theme/nord";
 import radical from "../theme/radical";
@@ -22,6 +23,7 @@ function themeFromColors(list: string[]): Theme {
 export const supported: Record<string, Theme> = {
     dark,
     forest,
+    glass,
     light,
     nord,
     unicorn,
@@ -94,22 +96,23 @@ function css(theme: Theme): string {
             css += `--color-${i}:${theme.palette.color[i]};`;
         }
     }
+    css += "--bar-text:#fff;";
     css += "}";
 
     if (theme.palette.bg) {
-        css += `#background{fill:var(--bg-0)}`;
+        css += `#background{fill:var(--bg-0);stroke:var(--bg-2)}`;
+        css += `#glass-border{stroke:var(--bg-3)}`;
         css += `#total-solved-bg{stroke:var(--bg-1)}`;
-        css += `#easy-solved-bg{stroke:var(--bg-1)}`;
-        css += `#medium-solved-bg{stroke:var(--bg-1)}`;
-        css += `#hard-solved-bg{stroke:var(--bg-1)}`;
+        css += `#easy-solved-bg{fill:var(--bg-1)}`;
+        css += `#medium-solved-bg{fill:var(--bg-1)}`;
+        css += `#hard-solved-bg{fill:var(--bg-1)}`;
     }
     if (theme.palette.text) {
-        css += `#username{fill:var(--text-0)}`;
         css += `#username-text{fill:var(--text-0)}`;
         css += `#total-solved-text{fill:var(--text-0)}`;
-        css += `#easy-solved-type{fill:var(--text-0)}`;
-        css += `#medium-solved-type{fill:var(--text-0)}`;
-        css += `#hard-solved-type{fill:var(--text-0)}`;
+        css += `#easy-solved-type{fill:var(--bar-text)}`;
+        css += `#medium-solved-type{fill:var(--bar-text)}`;
+        css += `#hard-solved-type{fill:var(--bar-text)}`;
         css += `#ranking{fill:var(--text-1)}`;
         css += `#easy-solved-count{fill:var(--text-1)}`;
         css += `#medium-solved-count{fill:var(--text-1)}`;
@@ -120,13 +123,13 @@ function css(theme: Theme): string {
             css += `#total-solved-ring{stroke:var(--color-0)}`;
         }
         if (theme.palette.color.length > 1) {
-            css += `#easy-solved-progress{stroke:var(--color-1)}`;
+            css += `#easy-solved-progress{fill:var(--color-1)}`;
         }
         if (theme.palette.color.length > 2) {
-            css += `#medium-solved-progress{stroke:var(--color-2)}`;
+            css += `#medium-solved-progress{fill:var(--color-2)}`;
         }
         if (theme.palette.color.length > 3) {
-            css += `#hard-solved-progress{stroke:var(--color-3)}`;
+            css += `#hard-solved-progress{fill:var(--color-3)}`;
         }
     }
 

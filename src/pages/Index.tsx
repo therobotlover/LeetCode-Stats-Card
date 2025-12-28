@@ -10,6 +10,7 @@ const themes = [
   "forest",
   "wtf",
   "unicorn",
+  "glass",
   "transparent",
   "radical",
   "chartreuse",
@@ -18,7 +19,7 @@ const themes = [
 
 const Index = () => {
   const [username, setUsername] = useState("ShaonMajumder");
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState("glass");
   const [font, setFont] = useState("Baloo 2");
   const [colors, setColors] = useState("");
   const [extension, setExtension] = useState("activity");
@@ -56,7 +57,7 @@ const Index = () => {
       }
       setIsLoaded(false);
       setPreviewUrl(buildCardUrl());
-    }, 1000);
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [username]);
@@ -66,6 +67,14 @@ const Index = () => {
     setIsLoaded(false);
     setPreviewUrl(buildCardUrl());
   }, [theme, font, colors, extension, site]);
+
+  useEffect(() => {
+    if (!previewUrl) return;
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [previewUrl]);
 
   useEffect(() => {
     document.body.classList.toggle("dark-mode", darkMode);
@@ -181,10 +190,14 @@ const Index = () => {
         <div className="loading-spinner" />
         {previewUrl ? (
           <img
+            key={previewUrl}
             id="preview"
             src={previewUrl}
             alt="LeetCode Stats preview"
             className={isLoaded ? "loaded" : ""}
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
             onLoad={() => setIsLoaded(true)}
             onError={() => setIsLoaded(true)}
           />
